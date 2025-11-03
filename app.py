@@ -1,25 +1,18 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
 import joblib
-import matplotlib.pyplot as plt
-import seaborn as sns
+import io
+import requests
+from sklearn.preprocessing import StandardScaler
 
-# =========================
-# APP CONFIGURATION
-# =========================
-st.set_page_config(
-    page_title="Asian Imports ML Dashboard",
-    page_icon="🌏",
-    layout="wide"
-)
+st.set_page_config(page_title="Asian Imports ML Dashboard", layout="wide")
 
-st.title("🌏 Import Data Classification using Machine Learning")
-st.markdown("### Predicting Trade Sub-Regions Based on Import Data")
+st.title("🌏 Asian Imports Classification Dashboard")
+st.markdown("#### Predict Sub-Region Based on Trade Data using 10 Machine Learning Models")
 
-# =========================
+# =====================================================
 # 1️⃣ LOAD DATA FROM GOOGLE SHEETS
-# =========================
+# =====================================================
 @st.cache_data
 def load_data():
     sheet_id = "1TyzcRYQ4yw53k3yPS2hLiOdhI5Pe6M9eKpTk2ADFCIs"
@@ -28,7 +21,7 @@ def load_data():
         df = pd.read_csv(sheet_url)
         st.success("✅ Data successfully loaded from Google Sheets!")
     except Exception as e:
-        st.error("⚠️ Could not load data from Google Sheets. Check permissions.")
+        st.error("⚠️ Could not load data from Google Sheets. Please check link or permissions.")
         st.write(e)
         df = pd.DataFrame()
     return df
@@ -36,114 +29,97 @@ def load_data():
 df = load_data()
 
 if not df.empty:
-    st.subheader("📊 Dataset Preview")
-    st.dataframe(df.head(10))
-    st.write("Shape:", df.shape)
-else:
-    st.stop()
+    with st.expander("📊 View Dataset Sample"):
+        st.dataframe(df.head())
 
-# =========================
-# 2️⃣ LOAD TRAINED MODELS
-# =========================
-@st.cache_resource
-def load_models():
-    models = {}
+# =====================================================
+# 2️⃣ LOAD MODELS FROM GOOGLE DRIVE
+# =====================================================
+def load_model_from_drive(drive_url):
     try:
-        models['Logistic Regression'] = joblib.load("models/model_lr.pkl")
-        models['Decision Tree'] = joblib.load("models/model_dt.pkl")
-        models['Random Forest'] = joblib.load("models/model_rf.pkl")
-        models['SVM'] = joblib.load("models/model_svm.pkl")
-        models['KNN'] = joblib.load("models/model_knn.pkl")
-        models['Naive Bayes'] = joblib.load("models/model_nb.pkl")
-        models['Gradient Boosting'] = joblib.load("models/model_gb.pkl")
-        models['AdaBoost'] = joblib.load("models/model_ab.pkl")
-        models['XGBoost'] = joblib.load("models/model_xgb.pkl")
-        models['LightGBM'] = joblib.load("models/model_lgbm.pkl")
-        st.success("✅ All models loaded successfully!")
+        file_id = drive_url.split("/d/")[1].split("/")[0]
+        download_url = f"https://drive.google.com/uc?id={file_id}"
+        response = requests.get(download_url)
+        response.raise_for_status()
+        model = joblib.load(io.BytesIO(response.content))
+        return model
     except Exception as e:
-        st.error("⚠️ Could not load one or more model files.")
+        st.error(f"⚠️ Failed to load model from {drive_url}")
         st.write(e)
+        return None
+
+@st.cache_resource
+def load_all_models():
+    model_links = {
+        "Logistic Regression": "https://drive.google.com/file/d/1DhHDaRr3LCk_lDugaTcyycx5rvWDz80R/view?usp=drive_link",
+        "Decision Tree": "https://drive.google.com/file/d/11HH3s8UVGsmVQnG-AWU564OkErXVidr3/view?usp=drive_link",
+        "Random Forest": "https://drive.google.com/file/d/1JQ-BpP7Df63CPtLfGtkltl3Q08J7AxIp/view?usp=drive_link",
+        "Support Vector Machine": "https://drive.google.com/file/d/1BsaMIlcCALgenEJJSSFAwMoAh0EUrQVj/view?usp=drive_link",
+        "K-Nearest Neighbors": "https://drive.google.com/file/d/1YGxTONVB-xKuViuOctL_Kdpyo0qH5OT0/view?usp=drive_link",
+        "Naive Bayes": "https://drive.google.com/file/d/14QQhqDJWgDhexdWC2g4RAN5FYK_K9-Mc/view?usp=drive_link",
+        "Gradient Boosting": "https://drive.google.com/file/d/1ZR62i8Qda5CYH63UW81j4L2p9ln50mtZ/view?usp=drive_link",
+        "AdaBoost": "https://drive.google.com/file/d/14p_ZU5sVu1quZphqRdWtUtQb5Hah7pnY/view?usp=drive_link",
+        "CatBoost": "https://drive.google.com/file/d/1SoRvZli6Hy71iiB_w6mt7sWK_ljWfR0M/view?usp=drive_link",
+    }
+
+    models = {}
+    for name, link in model_links.items():
+        with st.spinner(f"Loading {name} model..."):
+            model = load_model_from_drive(link)
+            if model:
+                models[name] = model
+                st.success(f"✅ {name} loaded successfully!")
     return models
 
-models = load_models()
+models = load_all_models()
 
-# =========================
-# 3️⃣ DATA INSIGHTS SECTION
-# =========================
-st.header("🔍 Exploratory Data Insights")
+# =====================================================
+# 3️⃣ USER INPUT SECTION
+# =====================================================
+st.sidebar.header("🔧 Input Trade Features")
 
-col1, col2 = st.columns(2)
-with col1:
-    st.metric("Total Records", df.shape[0])
-with col2:
-    st.metric("Total Columns", df.shape[1])
+try:
+    val_qt = st.sidebar.number_input("Value Quantity (value_qt)", min_value=0.0, step=0.1)
+    val_rs = st.sidebar.number_input("Value (₹) (value_rs)", min_value=0.0, step=0.1)
+    val_dl = st.sidebar.number_input("Value ($) (value_dl)", min_value=0.0, step=0.01)
 
-# Display class distribution
-if "sub_region" in df.columns:
-    st.subheader("📈 Class Distribution (Sub-Regions)")
-    fig, ax = plt.subplots(figsize=(8, 4))
-    sns.countplot(x="sub_region", data=df, palette="viridis", ax=ax)
-    plt.title("Sub-Region Distribution")
-    st.pyplot(fig)
+    input_data = pd.DataFrame({
+        "value_qt": [val_qt],
+        "value_rs": [val_rs],
+        "value_dl": [val_dl]
+    })
+except Exception as e:
+    st.warning("⚠️ Please ensure valid numeric input values.")
+    st.write(e)
 
-# =========================
-# 4️⃣ MODEL COMPARISON
-# =========================
-st.header("⚙️ Model Accuracy Comparison")
+# =====================================================
+# 4️⃣ MODEL SELECTION AND PREDICTION
+# =====================================================
+if models:
+    model_choice = st.selectbox("Select Model for Prediction", list(models.keys()))
 
-model_accuracy = {
-    'Logistic Regression': 85.2,
-    'Decision Tree': 89.6,
-    'Random Forest': 92.4,
-    'Support Vector Machine': 88.1,
-    'K-Nearest Neighbors': 84.7,
-    'Naive Bayes': 82.9,
-    'Gradient Boosting': 93.1,
-    'AdaBoost': 92.8,
-    'XGBoost': 94.7,
-    'LightGBM': 94.5
-}
+    if st.button("🚀 Predict Sub-Region"):
+        model = models.get(model_choice)
 
-acc_df = pd.DataFrame(list(model_accuracy.items()), columns=['Model', 'Accuracy'])
-acc_df = acc_df.sort_values(by='Accuracy', ascending=False)
+        if model:
+            st.info(f"Running prediction using **{model_choice}**...")
+            try:
+                # Scale if needed
+                scaler = StandardScaler()
+                scaled_input = scaler.fit_transform(input_data)
 
-st.dataframe(acc_df.style.background_gradient(cmap='coolwarm').format({'Accuracy': '{:.2f}%'}))
+                pred = model.predict(scaled_input)
+                st.success(f"✅ Predicted Sub-Region: **{pred[0]}**")
+            except Exception as e:
+                st.error("⚠️ Error during prediction.")
+                st.write(e)
+        else:
+            st.warning("Please wait for model to finish loading.")
+else:
+    st.warning("⚠️ No models were loaded. Check Drive links or internet connection.")
 
-fig, ax = plt.subplots(figsize=(10, 5))
-sns.barplot(x='Accuracy', y='Model', data=acc_df, palette='coolwarm', ax=ax)
-plt.title("Model Comparison by Accuracy", fontsize=14)
-st.pyplot(fig)
-
-# =========================
-# 5️⃣ PREDICTION SECTION
-# =========================
-st.header("🧠 Predict Sub-Region")
-
-st.markdown("Enter the trade details below to classify the sub-region:")
-
-col1, col2, col3 = st.columns(3)
-
-with col1:
-    value_qt = st.number_input("Value Quantity", min_value=0.0, value=1000.0)
-with col2:
-    value_rs = st.number_input("Value (₹)", min_value=0.0, value=500000.0)
-with col3:
-    value_dl = st.number_input("Value ($)", min_value=0.0, value=6000.0)
-
-selected_model = st.selectbox("Choose Model", list(models.keys()))
-
-if st.button("🔮 Predict Sub-Region"):
-    try:
-        model = models[selected_model]
-        input_data = np.array([[value_qt, value_rs, value_dl]])
-        prediction = model.predict(input_data)
-        st.success(f"🗺️ Predicted Sub-Region: **{prediction[0]}** using {selected_model}")
-    except Exception as e:
-        st.error("⚠️ Prediction failed. Ensure model files are loaded correctly.")
-        st.write(e)
-
-# =========================
-# 6️⃣ FOOTER
-# =========================
+# =====================================================
+# 5️⃣ FOOTER
+# =====================================================
 st.markdown("---")
-st.markdown("Developed by **Abhishek Wekhande** | Asian Imports ML Project 🌏")
+st.markdown("📘 **Developed by Abhishek Wekhande**  |  Data sourced from Open Government Data Platform India")
