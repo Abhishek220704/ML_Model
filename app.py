@@ -7,7 +7,7 @@ from sklearn.preprocessing import StandardScaler
 import base64
 
 # ------------------------------------------------------
-# 🌄 Add Background Image
+# 🌄 Add Background Image (.avif supported)
 # ------------------------------------------------------
 def add_bg_from_local(image_file):
     with open(image_file, "rb") as img_file:
@@ -16,7 +16,7 @@ def add_bg_from_local(image_file):
         f"""
         <style>
         .stApp {{
-            background-image: url("data:image/png;base64,{encoded}");
+            background-image: url("data:image/avif;base64,{encoded}");
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -26,7 +26,7 @@ def add_bg_from_local(image_file):
         unsafe_allow_html=True
     )
 
-add_bg_from_local("pic1.png")
+add_bg_from_local("pic1.avif")
 
 # ------------------------------------------------------
 # 🎨 Streamlit Page Config & Styling
@@ -112,7 +112,7 @@ def load_model_from_drive(drive_url):
         response.raise_for_status()
         model = joblib.load(io.BytesIO(response.content))
         return model
-    except Exception as e:
+    except Exception:
         return None
 
 @st.cache_resource
@@ -179,7 +179,6 @@ with col2:
 if predict_btn:
     model = models.get(model_choice)
     if model:
-        st.info(f"Predicting using **{model_choice}**...")
         try:
             scaler = StandardScaler()
             scaled_input = scaler.fit_transform(input_data)
