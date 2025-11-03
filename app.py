@@ -4,56 +4,42 @@ import joblib
 import io
 import requests
 from sklearn.preprocessing import StandardScaler
-import base64
 
 # ------------------------------------------------------
-# 🌄 Add Background Image (.avif supported)
-# ------------------------------------------------------
-def add_bg_from_local(image_file):
-    with open(image_file, "rb") as img_file:
-        encoded = base64.b64encode(img_file.read()).decode()
-    st.markdown(
-        f"""
-        <style>
-        .stApp {{
-            background-image: url("data:image/avif;base64,{encoded}");
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-        }}
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
-
-add_bg_from_local("pic1.avif")
-
-# ------------------------------------------------------
-# 🎨 Streamlit Page Config & Styling
+# 🌈 Streamlit Page Config
 # ------------------------------------------------------
 st.set_page_config(page_title="Asian Imports ML Dashboard", layout="wide")
 
+# ------------------------------------------------------
+# 🎨 Elegant CSS Styling (No Image, Gradient Background)
+# ------------------------------------------------------
 st.markdown("""
     <style>
-    /* Title Styling */
+    /* Gradient background */
+    .stApp {
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        color: white;
+    }
+    /* Title */
     .title-text {
         text-align: center;
-        color: white;
-        font-size: 36px;
+        font-size: 40px;
         font-weight: 800;
-        text-shadow: 1px 1px 5px black;
+        color: white;
+        text-shadow: 2px 2px 6px rgba(0,0,0,0.5);
+        margin-bottom: 10px;
     }
-    /* Subheading */
+    /* Subtitle */
     .subheader-text {
         text-align: center;
         color: #d4f1f9;
         font-size: 18px;
         margin-bottom: 30px;
-        text-shadow: 1px 1px 3px black;
+        text-shadow: 1px 1px 4px black;
     }
-    /* Sidebar Styling */
+    /* Sidebar */
     [data-testid="stSidebar"] {
-        background-color: rgba(0,0,0,0.65);
+        background-color: rgba(0, 0, 0, 0.7);
         color: white;
         border-right: 2px solid #3498db;
     }
@@ -70,10 +56,18 @@ st.markdown("""
         background-color: #217dbb;
         color: #f1f1f1;
     }
-    /* DataFrame Background */
+    /* DataFrames */
     .stDataFrame {
-        background: rgba(255,255,255,0.9);
+        background: rgba(255,255,255,0.95);
         border-radius: 10px;
+        color: black;
+    }
+    /* Footer */
+    .footer {
+        text-align: center;
+        color: #d4f1f9;
+        margin-top: 40px;
+        font-size: 14px;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -82,7 +76,7 @@ st.markdown('<div class="title-text">🌏 Asian Imports ML Classification Dashbo
 st.markdown('<div class="subheader-text">Analyze and Predict Sub-Regions using Machine Learning Models</div>', unsafe_allow_html=True)
 
 # ------------------------------------------------------
-# 1️⃣ LOAD DATA FROM GOOGLE SHEETS
+# 1️⃣ Load Data from Google Sheets
 # ------------------------------------------------------
 @st.cache_data
 def load_data():
@@ -102,7 +96,7 @@ with st.expander("📊 View Dataset Sample"):
     st.dataframe(df.head())
 
 # ------------------------------------------------------
-# 2️⃣ LOAD MODELS FROM GOOGLE DRIVE (Quiet Loading)
+# 2️⃣ Load Models from Google Drive (Silent)
 # ------------------------------------------------------
 def load_model_from_drive(drive_url):
     try:
@@ -139,7 +133,7 @@ def load_all_models():
 models = load_all_models()
 
 # ------------------------------------------------------
-# 3️⃣ USER INPUT SECTION
+# 3️⃣ Sidebar Input Section
 # ------------------------------------------------------
 st.sidebar.header("🔧 Input Trade Features")
 
@@ -164,7 +158,7 @@ input_data = pd.DataFrame({
 })
 
 # ------------------------------------------------------
-# 4️⃣ PREDICTION SECTION
+# 4️⃣ Prediction Section
 # ------------------------------------------------------
 col1, col2 = st.columns([1, 2])
 
@@ -191,10 +185,10 @@ if predict_btn:
         st.warning("Model not loaded or invalid.")
 
 # ------------------------------------------------------
-# 5️⃣ FOOTER
+# 5️⃣ Footer
 # ------------------------------------------------------
 st.markdown("<hr>", unsafe_allow_html=True)
 st.markdown(
-    "<p style='text-align:center; color:white;'>📘 Developed by <b>Abhishek Wekhande</b> | Data from OGD Platform India</p>",
+    "<p class='footer'>📘 Developed by <b>Abhishek Wekhande</b> | Data from OGD Platform India</p>",
     unsafe_allow_html=True
 )
