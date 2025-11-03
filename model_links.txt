@@ -1,0 +1,38 @@
+# ---------------------------------------------------------
+# Model File Links for Streamlit Deployment
+# Project: Asian Imports ML Dashboard
+# Author: Abhishek Wekhande
+# ---------------------------------------------------------
+
+Logistic Regression:
+https://drive.google.com/file/d/1DhHDaRr3LCk_lDugaTcyycx5rvWDz80R/view?usp=drive_link
+
+Decision Tree:
+https://drive.google.com/file/d/11HH3s8UVGsmVQnG-AWU564OkErXVidr3/view?usp=drive_link
+
+Random Forest:
+https://drive.google.com/file/d/1JQ-BpP7Df63CPtLfGtkltl3Q08J7AxIp/view?usp=drive_link
+
+Support Vector Machine (SVM):
+https://drive.google.com/file/d/1BsaMIlcCALgenEJJSSFAwMoAh0EUrQVj/view?usp=drive_link
+
+K-Nearest Neighbors (KNN):
+https://drive.google.com/file/d/1YGxTONVB-xKuViuOctL_Kdpyo0qH5OT0/view?usp=drive_link
+
+Naive Bayes:
+https://drive.google.com/file/d/14QQhqDJWgDhexdWC2g4RAN5FYK_K9-Mc/view?usp=drive_link
+
+Gradient Boosting:
+https://drive.google.com/file/d/1ZR62i8Qda5CYH63UW81j4L2p9ln50mtZ/view?usp=drive_link
+
+AdaBoost:
+https://drive.google.com/file/d/14p_ZU5sVu1quZphqRdWtUtQb5Hah7pnY/view?usp=drive_link
+
+CatBoost:
+https://drive.google.com/file/d/1SoRvZli6Hy71iiB_w6mt7sWK_ljWfR0M/view?usp=drive_link
+
+# ---------------------------------------------------------
+# Dataset (Google Sheets)
+# ---------------------------------------------------------
+Cleaned Imports from Asian Countries Dataset:
+https://docs.google.com/spreadsheets/d/1TyzcRYQ4yw53k3yPS2hLiOdhI5Pe6M9eKpTk2ADFCIs/edit?usp=sharing
