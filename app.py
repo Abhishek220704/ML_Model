@@ -11,7 +11,7 @@ from sklearn.preprocessing import StandardScaler
 st.set_page_config(page_title="Asian Imports ML Dashboard", layout="wide")
 
 # ------------------------------------------------------
-# 🎨 Elegant CSS Styling (No Image, Gradient Background)
+# 🎨 Elegant CSS Stylings (No Image, Gradient Background)
 # ------------------------------------------------------
 st.markdown("""
     <style>
@@ -192,3 +192,4 @@ st.markdown(
     "<p class='footer'>📘 Developed by <b>Abhishek Wekhande</b> | Data from OGD Platform India</p>",
     unsafe_allow_html=True
 )
+
